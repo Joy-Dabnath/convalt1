@@ -1,0 +1,162 @@
+/* ==================================================================
+ * cinematic.css — scroll-driven film layer
+ * ------------------------------------------------------------------
+ * One fixed canvas behind the whole page. The Convalt film is drawn
+ * frame by frame, and the scroll position is the transport control:
+ * scroll down, the film advances; scroll up, it rewinds.
+ *
+ * Stacking (all below the page copy, all above the base colour):
+ *   -3  .cine-stage   the film
+ *   -2  .cine-scrim   the legibility wash over the film
+ *   -1  #webgl        the existing Three.js particle layer
+ *
+ * Load AFTER three-motion.css so the #webgl opacity rule at the
+ * bottom wins. Nothing in the existing design is overridden.
+ * ================================================================== */
+
+/* ------------------------------------------------------------------
+ * 01. Stage
+ * ------------------------------------------------------------------ */
+.cine-stage,
+.cine-scrim {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  contain: strict;
+}
+
+.cine-stage {
+  z-index: -3;
+  opacity: 0;
+  transition: opacity 1.2s ease;
+  background-color: var(--base, #161616);
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.cine-stage canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+html.cine-ready .cine-stage {
+  opacity: 1;
+}
+
+/* ------------------------------------------------------------------
+ * 02. Scrim
+ *     The film is bright in places (the flower field, the sky over
+ *     the dam) and the theme's copy is near-white, so the film needs
+ *     a wash under the text. Heavier at the top and bottom where the
+ *     fixed header and the footer sit.
+ *     --cine-scrim is written by cinematic.js per section.
+ * ------------------------------------------------------------------ */
+.cine-scrim {
+  z-index: -2;
+  opacity: 0;
+  transition: opacity 0.9s ease;
+  --cine-scrim: 0.55;
+  background:
+    linear-gradient(
+      to bottom,
+      rgba(8, 11, 14, 0.92) 0%,
+      rgba(8, 11, 14, 0) 22%,
+      rgba(8, 11, 14, 0) 74%,
+      rgba(8, 11, 14, 0.94) 100%
+    ),
+    rgba(8, 11, 14, var(--cine-scrim));
+  transition: opacity 0.9s ease, background 0.6s linear;
+}
+
+html.cine-ready .cine-scrim {
+  opacity: 1;
+}
+
+/* Light theme: wash toward the paper colour instead of toward black,
+   or the switcher produces dark text on a dark film. */
+html[data-theme="light"] .cine-scrim,
+html.light .cine-scrim {
+  background:
+    linear-gradient(
+      to bottom,
+      rgba(250, 247, 246, 0.94) 0%,
+      rgba(250, 247, 246, 0.1) 22%,
+      rgba(250, 247, 246, 0.1) 74%,
+      rgba(250, 247, 246, 0.96) 100%
+    ),
+    rgba(250, 247, 246, calc(var(--cine-scrim) + 0.22));
+}
+
+/* ------------------------------------------------------------------
+ * 03. Hero — the one place the film is allowed to be loud
+ *     The hero copy gets a soft local vignette so the headline reads
+ *     against the factory footage without lifting the scrim for the
+ *     whole page.
+ * ------------------------------------------------------------------ */
+html.cine-ready .joy-hero-09__headline {
+  position: relative;
+  z-index: 1;
+}
+
+html.cine-ready .joy-hero-09__headline::before {
+  content: "";
+  position: absolute;
+  inset: -6rem -8rem -6rem -10rem;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(
+    120% 100% at 22% 50%,
+    rgba(8, 11, 14, 0.78) 0%,
+    rgba(8, 11, 14, 0.42) 45%,
+    rgba(8, 11, 14, 0) 78%
+  );
+}
+
+html[data-theme="light"].cine-ready .joy-hero-09__headline::before,
+html.light.cine-ready .joy-hero-09__headline::before {
+  background: radial-gradient(
+    120% 100% at 22% 50%,
+    rgba(250, 247, 246, 0.86) 0%,
+    rgba(250, 247, 246, 0.5) 45%,
+    rgba(250, 247, 246, 0) 78%
+  );
+}
+
+/* ------------------------------------------------------------------
+ * 04. Hand the particle layer a supporting role
+ *     Both layers at full strength fight each other. With the film
+ *     running, the particles drop back to a glint over the footage.
+ * ------------------------------------------------------------------ */
+html.webgl-ready.cine-ready #webgl {
+  opacity: 0.45;
+}
+
+/* ------------------------------------------------------------------
+ * 05. Sections that should sit on solid ground
+ *     Data-dense blocks (the team grid, the press list) read badly
+ *     over moving footage, so they keep the theme's own surface.
+ *     Add class="cine-solid" to any block that needs this.
+ * ------------------------------------------------------------------ */
+.cine-solid {
+  position: relative;
+  background-color: var(--base, #161616);
+}
+
+/* ------------------------------------------------------------------
+ * 06. Fallbacks
+ * ------------------------------------------------------------------ */
+@media (prefers-reduced-motion: reduce) {
+  .cine-stage,
+  .cine-scrim {
+    transition: none;
+  }
+}
+
+@media print {
+  .cine-stage,
+  .cine-scrim {
+    display: none !important;
+  }
+}

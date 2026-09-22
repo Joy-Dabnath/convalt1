@@ -1,0 +1,22 @@
+/* three-motion.css — the only styling the 3D layer needs.
+ * The canvas sits BEHIND the page (z-index:-1) on top of the theme's
+ * own background, never over content, and never takes pointer events.
+ * Nothing in the existing design is overridden. */
+#webgl{
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 1.8s ease;
+}
+html.webgl-ready #webgl{
+  opacity: 1;
+}
+@media print{
+  #webgl{ display: none !important; }
+}
